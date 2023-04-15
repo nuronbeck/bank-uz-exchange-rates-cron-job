@@ -1,0 +1,15 @@
+{
+  "name": "bank-uz-exchange-rates-cron-job",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nurbek Ismoilov <nuronbeck@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "@netlify/functions": "^1.4.0",
+    "axios": "^1.3.5"
+  }
+}
