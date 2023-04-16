@@ -70,8 +70,8 @@ exports.handler = schedule('* * * * *', async (event) => {
     console.log(`Scheduled job running at (${AREA_TIME} / AREA_TIME)...`);
 
     try {
-      const resourceData = await axios.get(`${PUBLISH_RESOURCE_BASE_URL}/fetch-rates`);
-      await autoPublishChannel(resourceData);
+      const { data = [] } = await axios.get(`${PUBLISH_RESOURCE_BASE_URL}/fetch-rates`);
+      await autoPublishChannel(data);
     } catch (error) {
       console.log("Error triggering hook => ", error?.message)
     }
