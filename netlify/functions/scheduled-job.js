@@ -71,7 +71,7 @@ exports.handler = schedule('* * * * *', async (event) => {
 
     try {
       const { data = [] } = await axios.get(`${PUBLISH_RESOURCE_BASE_URL}/fetch-rates`);
-      await autoPublishChannel(data);
+      await autoPublishChannel(data.sort(({ name: nameA }, { name: nameB }) => nameA.localeCompare(nameB)));
     } catch (error) {
       console.log("Error triggering hook => ", error?.message)
     }
