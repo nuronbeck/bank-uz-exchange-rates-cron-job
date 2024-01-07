@@ -1,6 +1,7 @@
 const { schedule } = require('@netlify/functions');
 const axios = require('axios');
 const { Telegraf } = require("telegraf");
+const _ = require('lodash');
 
 const {
   PUBLISH_RESOURCE_BASE_URL,
@@ -41,7 +42,7 @@ const checkResourceHealth = async () => {
 const autoPublishChannel = (payload = []) => {
   const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
 
-  const telegramPost = payload.reduce((acc, { name = 'bankname', buy = 0, sell = 0 }) => {
+  let telegramPost = payload.reduce((acc, { name = 'bankname', buy = 0, sell = 0 }) => {
     const postMarkup =
     `<strong>${name}:</strong>\n` +
     `<i>💵 Покупка:</i> ${buy} сум\n` +
@@ -52,7 +53,17 @@ const autoPublishChannel = (payload = []) => {
     return acc;
   }, '');
 
-  
+  const bestBuy = _.minBy(payload, (obj) => obj.buy);
+  const bestSell = _.maxBy(payload, (obj) => obj.sell);
+
+  if(bestBuy?.name && bestSell?.name){
+    telegramPost += 
+      `\n\n\n<strong>Лучшие на сегодня</strong>\n\n` +
+      `<strong>${bestBuy.name}:</strong>\n` +
+      `<i>💵 Покупка:</i> ${bestBuy.buy} сум\n\n` +
+      `<strong>${bestSell.name}:</strong>\n` +
+      `<i>💸 Продажа:</i> ${bestSell.sell} сум\n`;
+  }
 
   return bot.telegram.sendMessage(
     TELEGRAM_CHANNEL, telegramPost, { parse_mode: 'HTML'}
