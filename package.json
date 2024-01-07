@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "node --watch ./dev.js",
+    "dev": "node --watch ./dev.js"
   },
   "author": "Nurbek Ismoilov <nuronbeck@gmail.com>",
   "license": "ISC",
