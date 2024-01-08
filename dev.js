@@ -1,7 +1,7 @@
 require('dotenv').config();
 const axios = require('axios');
 const { Telegraf } = require("telegraf");
-const _ = require('lodash');
+const { toNumber, minBy, maxBy } = require('lodash');
 
 const {
   PUBLISH_RESOURCE_BASE_URL,
@@ -20,8 +20,8 @@ const buildMessage = (payload = []) => {
     return acc;
   }, '');
 
-  const bestBuy = _.minBy(payload, (obj) => obj.buy);
-  const bestSell = _.maxBy(payload, (obj) => obj.sell);
+  const bestBuy = minBy(payload, ({ buy }) => toNumber(buy.replace(/ /g,'')));
+  const bestSell = maxBy(payload, ({ sell }) => toNumber(sell.replace(/ /g,'')));
 
   if(bestBuy?.name && bestSell?.name){
     telegramPost += 
@@ -40,7 +40,11 @@ const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
 bot.hears('1', async (ctx) => {
   try {
     const { data = [] } = await axios.get(`${PUBLISH_RESOURCE_BASE_URL}/fetch-rates`);
-    const sortedList = data.sort(({ name: nameA }, { name: nameB }) => nameA.localeCompare(nameB));
+    const filteredActiveValues = data.filter(({ buy, sell }) => {
+      return toNumber(buy.replace(/ /g,'')) > 10000 && toNumber(sell.replace(/ /g,'')) > 10000;
+    });
+
+    const sortedList = filteredActiveValues.sort(({ name: nameA }, { name: nameB }) => nameA.localeCompare(nameB));
     const message = buildMessage(sortedList);
 
     return ctx.reply(message, { parse_mode: 'HTML' })
@@ -51,3 +55,4 @@ bot.hears('1', async (ctx) => {
 });
 
 bot.launch();
+console.log('Bot started');

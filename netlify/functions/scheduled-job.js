@@ -1,7 +1,7 @@
 const { schedule } = require('@netlify/functions');
 const axios = require('axios');
 const { Telegraf } = require("telegraf");
-const _ = require('lodash');
+const { toNumber, minBy, maxBy } = require('lodash');
 
 const {
   PUBLISH_RESOURCE_BASE_URL,
@@ -53,8 +53,8 @@ const autoPublishChannel = (payload = []) => {
     return acc;
   }, '');
 
-  const bestBuy = _.minBy(payload, (obj) => obj.buy);
-  const bestSell = _.maxBy(payload, (obj) => obj.sell);
+  const bestBuy = minBy(payload, ({ buy }) => toNumber(buy.replace(/ /g,'')));
+  const bestSell = maxBy(payload, ({ sell }) => toNumber(sell.replace(/ /g,'')));
 
   if(bestBuy?.name && bestSell?.name){
     telegramPost += 
@@ -82,7 +82,11 @@ exports.handler = schedule('* * * * *', async (event) => {
 
     try {
       const { data = [] } = await axios.get(`${PUBLISH_RESOURCE_BASE_URL}/fetch-rates`);
-      await autoPublishChannel(data.sort(({ name: nameA }, { name: nameB }) => nameA.localeCompare(nameB)));
+      const filteredActiveValues = data.filter(({ buy, sell }) => {
+        return toNumber(buy.replace(/ /g,'')) > 10000 && toNumber(sell.replace(/ /g,'')) > 10000;
+      });
+
+      await autoPublishChannel(filteredActiveValues.sort(({ name: nameA }, { name: nameB }) => nameA.localeCompare(nameB)));
     } catch (error) {
       console.log("Error triggering hook => ", error?.message)
     }
