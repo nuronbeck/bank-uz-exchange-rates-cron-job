@@ -20,8 +20,8 @@ const buildMessage = (payload = []) => {
     return acc;
   }, '');
 
-  const bestBuy = minBy(payload, ({ buy }) => toNumber(buy.replace(/ /g,'')));
-  const bestSell = maxBy(payload, ({ sell }) => toNumber(sell.replace(/ /g,'')));
+  const bestBuy = maxBy(payload, ({ buy }) => toNumber(buy.replace(/ /g,'')));
+  const bestSell = minBy(payload, ({ sell }) => toNumber(sell.replace(/ /g,'')));
 
   if(bestBuy?.name && bestSell?.name){
     telegramPost += 
